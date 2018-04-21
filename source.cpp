@@ -8,7 +8,7 @@
 
 int mvsd=0;
 int mvdn=0;
-int speed=4;
+int speed=5;
 
 class Obstacle{
 private:
@@ -59,7 +59,7 @@ public:
 
 };
 
-Car car(2,3,50000);
+Car car(2,3,20000);
 
 void drawBox(int width, int height,bool sswitch){
         for (int i=1;i<height-1;i++){
@@ -116,7 +116,7 @@ void readbutton(){
 }
 
 void raiseSpeed(){
-	mvprintw(WINHEIGHT,0,"LVL:");
+	mvprintw(WINHEIGHT,0,"SCORE:");
 	while(true){
 		speed++;
 		usleep(1000000);
@@ -126,7 +126,7 @@ void raiseSpeed(){
 
 void obsMovement(Obstacle obs){
 //	while(!obs.timeToDie()){
-	
+
 	while(true){
 	obs.clear();
 	obs.update();
