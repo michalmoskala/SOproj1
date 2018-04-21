@@ -3,14 +3,34 @@
 #include<unistd.h>
 #include<thread>
 
-#define WINWIDTH 40
-#define WINHEIGHT 50
+#define WINWIDTH 100
+#define WINHEIGHT 20
 
 int mvsd=0;
 int mvdn=0;
+int speed=4;
 
+class Obstacle{
+private:
+	int x;
+	int y;
+public:
+	int getX(){return x;}
+	int getY(){return y;}
+	void resetX(){x=50;}
 
-class Ball{
+	Obstacle(int a, int b){x=a;y=b;}
+
+	void draw(){mvprintw(y,x,"O");}
+	void update(){x--;}
+	void clear(){mvprintw(y,x," ");}
+	bool timeToDie(){return (x<2);}
+
+};
+
+Obstacle obs(50,3);
+
+class Car{
 private:
 	int x;
 	int y;
@@ -21,7 +41,7 @@ public:
 	int getY(){return y;}
 	int getWait(){return wait;}
 
-	Ball(int a,int b,int e){x=a;y=b;wait=e;}
+	Car(int a,int b,int e){x=a;y=b;wait=e;}
 
 	void draw(){	mvprintw(y+0,x,".'-`-._");
 			mvprintw(y+1,x,"'O--O--'");}
@@ -39,34 +59,42 @@ public:
 
 };
 
-Ball ball(2,2,50000);
+Car car(2,3,50000);
 
-void drawBox(int width, int height){
+void drawBox(int width, int height,bool sswitch){
         for (int i=1;i<height-1;i++){
-                mvprintw(i,0,"X");
-                mvprintw(i,width-1,"X");
+		mvprintw(i,0,"X");
+		mvprintw(i,width-1,"X");
+
                 }
         for (int i=0;i<width;i++){
-                mvprintw(0,i,"X");
-                mvprintw(height-1,i,"X");
+		if(sswitch){
+                mvprintw(0,i,"-");
+                mvprintw(height-1,i,"-");
                 }
+		else{
+		mvprintw(0,i,"=");
+		mvprintw(height-1,i,"=");
+		}
+		sswitch=!sswitch;
+	}
 }
 
 
 
 
-void repeat(Ball ball){
+void repeat(Car car){
 	while(true){
-	ball.clear();
-	ball.mvr(mvsd,mvdn);
+	car.clear();
+	car.mvr(mvsd,mvdn);
 	mvsd=0;
 	mvdn=0;
-	ball.draw();
+	car.draw();
 	refresh();
-	usleep(ball.getWait());
+	usleep(car.getWait());
 	}
 
-	ball.clear();
+	car.clear();
 
 }
 
@@ -82,19 +110,57 @@ void readbutton(){
 		mvdn=1;
 	else if (input=='w')
 		mvdn=-1;
+	usleep(1000);
 }
 
 }
 
+void raiseSpeed(){
+	mvprintw(WINHEIGHT,0,"LVL:");
+	while(true){
+		speed++;
+		usleep(1000000);
+	mvprintw(WINHEIGHT,speed,"-");
+}
+}
 
+void obsMovement(Obstacle obs){
+//	while(!obs.timeToDie()){
+	
+	while(true){
+	obs.clear();
+	obs.update();
+	obs.draw();
+
+	usleep(1000000/speed);
+	if(obs.timeToDie())
+		obs.resetX();
+	}
+	obs.clear();
+}
+
+void frameMovement(){
+	bool sswitch=true;
+	while(true){
+	sswitch=!sswitch;
+	drawBox(WINWIDTH,WINHEIGHT,sswitch);
+
+	usleep(1000000/speed);
+	}
+
+}
 
 int main(){
 	initscr();
 
-	drawBox(WINWIDTH,WINHEIGHT);
+	std::thread t0(obsMovement,std::ref(obs));
 
-	std::thread t1(repeat,std::ref(ball));
+	std::thread t1(repeat,std::ref(car));
 	std::thread t2(readbutton);
+
+	std::thread t3(frameMovement);
+
+	std::thread t4(raiseSpeed);
 
 	t1.join();
 	t2.join();
