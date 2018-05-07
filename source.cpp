@@ -66,7 +66,44 @@ public:
 
 };
 
+
 Car car(2,3,20000);
+
+class Decoration{
+private:
+	int x;
+	int y;
+public:
+	int getX(){return x;}
+	int getY(){return y;}
+	
+	Decoration(int a, int b){x=a;y=b;}
+	
+	void draw(){	mvprintw(y+0,x,"| || | _");
+		    	mvprintw(y+1,x,"| || || |");
+			mvprintw(y+2,x," \_  || |");
+		    	mvprintw(y+3,x,"   |  _/");
+		    	mvprintw(y+4,x,"   | |");
+			mvprintw(y+5,x,"   |_|");
+		   }
+	
+	void clear(){
+			mvprintw(y+0,x,"         ");
+			mvprintw(y+1,x,"         ");
+			mvprintw(y+2,x,"         ");
+			mvprintw(y+3,x,"         ");
+			mvprintw(y+4,x,"         ");
+			mvprintw(y+5,x,"         ");
+
+		}
+	}
+	
+	void update(){x--;}
+	
+
+}
+
+Decoration gagduz(40,70);
 
 void drawBox(int width, int height,bool sswitch){
         for (int i=1;i<height-1;i++){
@@ -135,12 +172,11 @@ void raiseSpeed(){
 }
 
 void obsMovement(Obstacle obs){
-//	while(!obs.timeToDie()){
 
 	std::srand(std::time(nullptr));
 	int r=std::rand()%8;
 	obs.reCreate(50,r+2);
-	//int random=std::rand();
+
 	while(!dead){
 	obs.clear();
 	obs.update();
@@ -153,12 +189,26 @@ void obsMovement(Obstacle obs){
 	if(obs.timeToDie())
 		{
 		obs.clear();
-		usleep(1000000);
-		int r=std::rand()%8;
-		obs.reCreate(50,r+2);
+		int r=std::rand()%5;
+		r+=7;
+		usleep(10000000/r);
+		r=std::rand()%8;
+		int rr=std::rand()%20;
+		obs.reCreate(rr+40,r+2);
 		}
 	}
 	obs.clear();
+}
+
+void decMovement(Decoration dec){
+
+	while(!dead){
+	obs.clear();
+	obs.update();
+	obs.draw();
+		
+	usleep(1000000/speed);
+	
 }
 
 void frameMovement(){
@@ -184,17 +234,16 @@ int main(){
 
 	std::thread t1(repeat,std::ref(car));
 	std::thread t2(readbutton);
-
 	std::thread t3(frameMovement);
-
 	std::thread t4(raiseSpeed);
-
+	std::thread t5(decMovement,std::ref(gagduz));
+	
 	t0.join();
 	t1.join();
 	t2.join();
 	t3.join();
 	t4.join();
-
+	t5.join();
 
 	endwin();
 	return 0;
