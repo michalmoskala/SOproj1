@@ -76,17 +76,17 @@ private:
 public:
 	int getX(){return x;}
 	int getY(){return y;}
-	
+
 	Decoration(int a, int b){x=a;y=b;}
-	
+
 	void draw(){	mvprintw(y+0,x,"| || | _");
 		    	mvprintw(y+1,x,"| || || |");
-			mvprintw(y+2,x," \_  || |");
+			mvprintw(y+2,x," \\_  || |");
 		    	mvprintw(y+3,x,"   |  _/");
 		    	mvprintw(y+4,x,"   | |");
 			mvprintw(y+5,x,"   |_|");
 		   }
-	
+
 	void clear(){
 			mvprintw(y+0,x,"         ");
 			mvprintw(y+1,x,"         ");
@@ -96,14 +96,14 @@ public:
 			mvprintw(y+5,x,"         ");
 
 		}
-	}
-	
+
+
 	void update(){x--;}
-	
 
-}
 
-Decoration gagduz(40,70);
+};
+
+Decoration gagduz(70,40);
 
 void drawBox(int width, int height,bool sswitch){
         for (int i=1;i<height-1;i++){
@@ -203,12 +203,12 @@ void obsMovement(Obstacle obs){
 void decMovement(Decoration dec){
 
 	while(!dead){
-	obs.clear();
-	obs.update();
-	obs.draw();
-		
+	dec.clear();
+	dec.update();
+	dec.draw();
+
 	usleep(1000000/speed);
-	
+	}
 }
 
 void frameMovement(){
@@ -237,7 +237,7 @@ int main(){
 	std::thread t3(frameMovement);
 	std::thread t4(raiseSpeed);
 	std::thread t5(decMovement,std::ref(gagduz));
-	
+
 	t0.join();
 	t1.join();
 	t2.join();
