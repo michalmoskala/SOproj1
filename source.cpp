@@ -2,6 +2,8 @@
 #include<ncurses.h>
 #include<unistd.h>
 #include<thread>
+#include<cstdlib>
+#include<ctime>
 
 #define WINWIDTH 100
 #define WINHEIGHT 20
@@ -9,6 +11,10 @@
 int mvsd=0;
 int mvdn=0;
 int speed=5;
+bool dead=false;
+int carX;
+int carY;
+
 
 class Obstacle{
 private:
@@ -25,6 +31,7 @@ public:
 	void update(){x--;}
 	void clear(){mvprintw(y,x," ");}
 	bool timeToDie(){return (x<2);}
+	bool reCreate(int a, int b){x=a;y=b;}
 
 };
 
@@ -84,7 +91,10 @@ void drawBox(int width, int height,bool sswitch){
 
 
 void repeat(Car car){
-	while(true){
+	while(!dead){
+	carX=car.getX();
+	carY=car.getY();
+
 	car.clear();
 	car.mvr(mvsd,mvdn);
 	mvsd=0;
@@ -99,7 +109,7 @@ void repeat(Car car){
 }
 
 void readbutton(){
-	while(true){
+	while(!dead){
 	char input;
 	std::cin >> input;
 	if (input=='a')
@@ -117,7 +127,7 @@ void readbutton(){
 
 void raiseSpeed(){
 	mvprintw(WINHEIGHT,0,"SCORE:");
-	while(true){
+	while(!dead){
 		speed++;
 		usleep(1000000);
 	mvprintw(WINHEIGHT,speed,"-");
@@ -127,21 +137,33 @@ void raiseSpeed(){
 void obsMovement(Obstacle obs){
 //	while(!obs.timeToDie()){
 
-	while(true){
+	std::srand(std::time(nullptr));
+	int r=std::rand()%8;
+	obs.reCreate(50,r+2);
+	//int random=std::rand();
+	while(!dead){
 	obs.clear();
 	obs.update();
 	obs.draw();
 
+	if((obs.getX()<=carX+6&&obs.getX()>=carX&&obs.getY()==carY)
+	||(obs.getX()<=carX+7&&obs.getX()>=carX&&obs.getY()==carY+1)) dead=true;
+
 	usleep(1000000/speed);
 	if(obs.timeToDie())
-		obs.resetX();
+		{
+		obs.clear();
+		usleep(1000000);
+		int r=std::rand()%8;
+		obs.reCreate(50,r+2);
+		}
 	}
 	obs.clear();
 }
 
 void frameMovement(){
 	bool sswitch=true;
-	while(true){
+	while(!dead){
 	sswitch=!sswitch;
 	drawBox(WINWIDTH,WINHEIGHT,sswitch);
 
@@ -152,8 +174,13 @@ void frameMovement(){
 
 int main(){
 	initscr();
+	curs_set(0);
 
 	std::thread t0(obsMovement,std::ref(obs));
+	std::thread t0a(obsMovement,std::ref(obs));
+	std::thread t0b(obsMovement,std::ref(obs));
+	std::thread t0c(obsMovement,std::ref(obs));
+	std::thread t0d(obsMovement,std::ref(obs));
 
 	std::thread t1(repeat,std::ref(car));
 	std::thread t2(readbutton);
@@ -162,8 +189,12 @@ int main(){
 
 	std::thread t4(raiseSpeed);
 
+	t0.join();
 	t1.join();
 	t2.join();
+	t3.join();
+	t4.join();
+
 
 	endwin();
 	return 0;
