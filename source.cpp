@@ -14,6 +14,7 @@ int speed=5;
 bool dead=false;
 int carX;
 int carY;
+int hp=10;
 
 
 class Obstacle{
@@ -27,15 +28,65 @@ public:
 
 	Obstacle(int a, int b){x=a;y=b;}
 
-	void draw(){mvprintw(y,x,"O");}
+	void draw(){mvprintw(y,x,"X");}
 	void update(){x--;}
 	void clear(){mvprintw(y,x," ");}
 	bool timeToDie(){return (x<2);}
 	bool reCreate(int a, int b){x=a;y=b;}
+	void killX(){x=-2;}
 
 };
 
 Obstacle obs(50,3);
+
+
+class Health{
+private:
+	int x;
+	int y;
+public:
+	int getX(){return x;}
+	int getY(){return y;}
+	void resetX(){x=50;}
+
+	Health(int a, int b){x=a;y=b;}
+
+	void draw(){mvprintw(y,x,"H");}
+	void update(){x--;}
+	void clear(){mvprintw(y,x," ");}
+	bool timeToDie(){return (x<2);}
+	bool reCreate(int a, int b){x=a;y=b;}
+	void killX(){x=-2;}
+
+};
+
+Health hea(30,7);
+
+
+
+
+class Reward{
+private:
+	int x;
+	int y;
+public:
+	int getX(){return x;}
+	int getY(){return y;}
+	void resetX(){x=50;}
+
+	Reward(int a, int b){x=a;y=b;}
+
+	void draw(){mvprintw(y,x,"P");}
+	void update(){x--;}
+	void clear(){mvprintw(y,x," ");}
+	bool timeToDie(){return (x<2);}
+	bool reCreate(int a, int b){x=a;y=b;}
+	void killX(){x=-2;}
+
+};
+
+Reward rew(40,6);
+
 
 class Car{
 private:
@@ -62,12 +113,19 @@ public:
 		}
 	}
 
-	void mvr(int m,int n){x+=m; y+=n;}
+	void mvr(int m,int n){
+		if ((m<0&&x>2)||(m>0&&x<WINWIDTH-9))
+			x+=m;
+		if ((n<0&&y>1)||(n>0&&y<WINHEIGHT-3))
+			y+=n;
+	}
 
 };
 
 
 Car car(2,3,20000);
+
+
 
 class Decoration{
 private:
@@ -139,9 +197,11 @@ void repeat(Car car){
 	car.draw();
 	refresh();
 	usleep(car.getWait());
+	if (hp<=0) dead=true;
 	}
 
 	car.clear();
+
 
 }
 
@@ -164,10 +224,16 @@ void readbutton(){
 
 void raiseSpeed(){
 	mvprintw(WINHEIGHT,0,"SCORE:");
+
 	while(!dead){
 		speed++;
 		usleep(1000000);
-	mvprintw(WINHEIGHT,speed,"-");
+	mvprintw(WINHEIGHT+1,0,"                                                 ");
+	for (int i=6;i<6+speed;i++)
+		mvprintw(WINHEIGHT,i,"-");
+	mvprintw(WINHEIGHT+1,0,"HP:");
+	for (int i=3;i<3+hp;i++)
+		mvprintw(WINHEIGHT+1,i,"+");
 }
 }
 
@@ -183,7 +249,12 @@ void obsMovement(Obstacle obs){
 	obs.draw();
 
 	if((obs.getX()<=carX+6&&obs.getX()>=carX&&obs.getY()==carY)
-	||(obs.getX()<=carX+7&&obs.getX()>=carX&&obs.getY()==carY+1)) dead=true;
+	||(obs.getX()<=carX+7&&obs.getX()>=carX&&obs.getY()==carY+1))
+	{
+		hp--;
+		obs.killX();
+
+	}
 
 	usleep(1000000/speed);
 	if(obs.timeToDie())
@@ -192,13 +263,79 @@ void obsMovement(Obstacle obs){
 		int r=std::rand()%5;
 		r+=7;
 		usleep(10000000/r);
-		r=std::rand()%8;
+		r=std::rand()%(WINHEIGHT-3);
 		int rr=std::rand()%20;
-		obs.reCreate(rr+40,r+2);
+		obs.reCreate(rr+WINWIDTH-20,r+2);
 		}
 	}
 	obs.clear();
 }
+
+void rewMovement(Reward rew){
+
+	std::srand(std::time(nullptr));
+	int r=std::rand()%8;
+	rew.reCreate(50,r+2);
+
+	while(!dead){
+	rew.clear();
+	rew.update();
+	rew.draw();
+
+	if((rew.getX()<=carX+6&&rew.getX()>=carX&&rew.getY()==carY)
+	||(rew.getX()<=carX+7&&rew.getX()>=carX&&rew.getY()==carY+1)){
+		speed+=3;
+		rew.killX();
+	}
+
+	usleep(1000000/speed);
+	if(rew.timeToDie())
+		{
+		rew.clear();
+		int r=std::rand()%5;
+		r+=7;
+		usleep(10000000/r);
+		r=std::rand()%(WINHEIGHT-3);
+		int rr=std::rand()%20;
+		rew.reCreate(rr+WINWIDTH-20,r+2);
+		}
+	}
+	rew.clear();
+}
+
+
+void heaMovement(Health hea){
+
+	std::srand(std::time(nullptr));
+	int r=std::rand()%8;
+	hea.reCreate(50,r+2);
+
+	while(!dead){
+	hea.clear();
+	hea.update();
+	hea.draw();
+
+	if((hea.getX()<=carX+6&&hea.getX()>=carX&&hea.getY()==carY)
+	||(hea.getX()<=carX+7&&hea.getX()>=carX&&hea.getY()==carY+1)){
+		hp++;
+		hea.killX();
+	}
+
+	usleep(1000000/speed);
+	if(hea.timeToDie())
+		{
+		hea.clear();
+		int r=std::rand()%5;
+		r+=7;
+		usleep(10000000/r);
+		r=std::rand()%(WINHEIGHT-3);
+		int rr=std::rand()%20;
+		hea.reCreate(rr+WINWIDTH-20,r+2);
+		}
+	}
+	hea.clear();
+}
+
 
 void decMovement(Decoration dec){
 
@@ -231,6 +368,13 @@ int main(){
 	std::thread t0b(obsMovement,std::ref(obs));
 	std::thread t0c(obsMovement,std::ref(obs));
 	std::thread t0d(obsMovement,std::ref(obs));
+	std::thread t0e(obsMovement,std::ref(obs));
+	std::thread t0f(obsMovement,std::ref(obs));
+
+	std::thread d0(rewMovement,std::ref(rew));
+	std::thread d1(rewMovement,std::ref(rew));
+
+	std::thread h0(heaMovement,std::ref(hea));
 
 	std::thread t1(repeat,std::ref(car));
 	std::thread t2(readbutton);
