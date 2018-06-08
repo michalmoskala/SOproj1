@@ -4,6 +4,7 @@
 #include<thread>
 #include<cstdlib>
 #include<ctime>
+#include<fstream>
 
 #define WINWIDTH 100
 #define WINHEIGHT 20
@@ -14,7 +15,7 @@ int speed=5;
 bool dead=false;
 int carX;
 int carY;
-int hp=10;
+int hp=8;
 
 
 class Obstacle{
@@ -155,7 +156,8 @@ public:
 
 		}
 
-
+	bool timeToDie(){return (x<-4);}
+	bool reCreate(int a, int b){x=a;y=b;}
 	void update(){x--;}
 
 
@@ -345,6 +347,17 @@ void decMovement(Decoration dec){
 	dec.draw();
 
 	usleep(1000000/speed);
+	if(dec.timeToDie())
+	{
+		dec.clear();
+		int r=std::rand()%5;
+		r+=7;
+		usleep(10000000/r);
+		r=std::rand()%(10);
+		int rr=std::rand()%20;
+		dec.reCreate(rr+WINWIDTH-20,r+WINHEIGHT+5);
+	
+	}
 	}
 }
 
@@ -383,6 +396,18 @@ int main(){
 	std::thread t5(decMovement,std::ref(gagduz));
 
 	t0.join();
+	t0a.join();
+	t0b.join();
+	t0c.join();
+	t0d.join();
+	t0e.join();
+	t0f.join();
+
+	d0.join();
+	d1.join();
+
+	h0.join();
+
 	t1.join();
 	t2.join();
 	t3.join();
@@ -390,6 +415,26 @@ int main(){
 	t5.join();
 
 	endwin();
-	return 0;
+
+	std::fstream myf("rekord.txt",std::ios_base::in);
+	int das;
+	myf >> das;
+
+	std::cout << "Punkciory: " << speed << "\n";
+	
+	if (speed>das)
+	{
+		std::cout << "POBILES REKORD!\n";
+		std::ofstream myfile;
+		myfile.open("rekord.txt");
+		myfile << speed;
+		myfile.close();	
+	}
+	else
+	{
+		std::cout << "Rekord: " << das << "\n";
+	}
+	
+	return speed;
 }
 
