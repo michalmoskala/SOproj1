@@ -18,86 +18,36 @@ int carY;
 int hp=8;
 
 
-class Obstacle{
-private:
+class MovingObject{
+protected:
 	int x;
 	int y;
 public:
 	int getX(){return x;}
 	int getY(){return y;}
-	void resetX(){x=50;}
-
-	Obstacle(int a, int b){x=a;y=b;}
-
-	void draw(){mvprintw(y,x,"X");}
-	void update(){x--;}
-	void clear(){mvprintw(y,x," ");}
-	bool timeToDie(){return (x<2);}
-	bool reCreate(int a, int b){x=a;y=b;}
-	void killX(){x=-2;}
-
 };
 
-Obstacle obs(50,3);
 
-
-class Health{
-private:
-	int x;
-	int y;
+class ClearableObject:public MovingObject{
 public:
-	int getX(){return x;}
-	int getY(){return y;}
-	void resetX(){x=50;}
-
-	Health(int a, int b){x=a;y=b;}
-
-	void draw(){mvprintw(y,x,"H");}
-	void update(){x--;}
-	void clear(){mvprintw(y,x," ");}
-	bool timeToDie(){return (x<2);}
 	bool reCreate(int a, int b){x=a;y=b;}
-	void killX(){x=-2;}
+	void update(){x--;}
 
 };
 
-Health hea(30,7);
-
-
-
-
-class Reward{
-private:
-	int x;
-	int y;
+class Collectable:public ClearableObject{
 public:
-	int getX(){return x;}
-	int getY(){return y;}
-	void resetX(){x=50;}
-
-	Reward(int a, int b){x=a;y=b;}
-
-	void draw(){mvprintw(y,x,"P");}
-	void update(){x--;}
 	void clear(){mvprintw(y,x," ");}
 	bool timeToDie(){return (x<2);}
-	bool reCreate(int a, int b){x=a;y=b;}
 	void killX(){x=-2;}
 
 };
 
-Reward rew(40,6);
-
-
-class Car{
+class Car:public MovingObject{
 private:
-	int x;
-	int y;
 	int wait;
 
 public:
-	int getX(){return x;}
-	int getY(){return y;}
 	int getWait(){return wait;}
 
 	Car(int a,int b,int e){x=a;y=b;wait=e;}
@@ -124,18 +74,53 @@ public:
 };
 
 
+
+class Obstacle:public Collectable{
+public:
+
+	Obstacle(int a, int b){x=a;y=b;}
+
+	void draw(){mvprintw(y,x,"X");}
+	
+
+};
+
+Obstacle obs(50,3);
+
+
+class Health:public Collectable{
+public:
+	
+	Health(int a, int b){x=a;y=b;}
+
+	void draw(){mvprintw(y,x,"H");}
+	
+
+};
+
+Health hea(30,7);
+
+
+
+
+class Reward:public Collectable{
+public:
+	
+	Reward(int a, int b){x=a;y=b;}
+
+	void draw(){mvprintw(y,x,"P");}
+	
+};
+
+Reward rew(40,6);
+
+
 Car car(2,3,20000);
 
 
 
-class Decoration{
-private:
-	int x;
-	int y;
+class Decoration:public ClearableObject{
 public:
-	int getX(){return x;}
-	int getY(){return y;}
-
 	Decoration(int a, int b){x=a;y=b;}
 
 	void draw(){	mvprintw(y+0,x,"| || | _");
@@ -157,9 +142,7 @@ public:
 		}
 
 	bool timeToDie(){return (x<-4);}
-	bool reCreate(int a, int b){x=a;y=b;}
-	void update(){x--;}
-
+	
 
 };
 
